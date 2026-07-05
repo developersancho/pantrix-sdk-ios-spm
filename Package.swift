@@ -16,8 +16,8 @@ let package = Package(
         // Closed source — the compiled binary xcframework.
         .binaryTarget(
             name: "PantrixCore",
-            url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-alpha.1/PantrixCore-1.0.0-alpha.1.xcframework.zip",
-            checksum: "b97b68869696363ce016e0d0dea1e165cdc9dc8b9a0da5f98c7f638bfd3122f2"
+            url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-alpha.2/PantrixCore-1.0.0-alpha.2.xcframework.zip",
+            checksum: "d9003fe35940f7bc8a8e8e4487cb3d19539ccd6fc25f599f4dc85c1521411b19"
         ),
         // Thin open umbrella so consumers just `import Pantrix`.
         .target(
