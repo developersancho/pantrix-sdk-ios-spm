@@ -12,13 +12,19 @@ let package = Package(
         .library(name: "Pantrix", targets: ["Pantrix"]),
         // Opt-in SwiftUI helpers. UIKit-only apps should NOT add this — it links SwiftUI.framework.
         .library(name: "PantrixSwiftUI", targets: ["PantrixSwiftUI"]),
+        // Opt-in Alamofire tracking. Only apps that use it pull Alamofire in.
+        .library(name: "PantrixAlamofire", targets: ["PantrixAlamofire"]),
+    ],
+    dependencies: [
+        // Used ONLY by the opt-in PantrixAlamofire target.
+        .package(url: "https://github.com/Alamofire/Alamofire", from: "5.12.0"),
     ],
     targets: [
         // Closed source — the compiled binary xcframework.
         .binaryTarget(
             name: "PantrixCore",
-            url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-alpha.3/PantrixCore-1.0.0-alpha.3.xcframework.zip",
-            checksum: "24d5d23f27ac4a01c35ee35c892b60669cb3cfd26c2299c965d926ce7eb9ebd9"
+            url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-alpha.4/PantrixCore-1.0.0-alpha.4.xcframework.zip",
+            checksum: "ce73582f52f96ce2687920a3cbdcf02130e2ce59e4d05e8fea9ae465ff34ddae"
         ),
         // Thin open umbrella so consumers just `import Pantrix`.
         .target(
@@ -31,6 +37,11 @@ let package = Package(
         .target(
             name: "PantrixSwiftUI",
             dependencies: ["PantrixCore"]
+        ),
+        // Open source — Alamofire EventMonitor glue over the public trackHttp facade.
+        .target(
+            name: "PantrixAlamofire",
+            dependencies: ["PantrixCore", .product(name: "Alamofire", package: "Alamofire")]
         ),
     ]
 )

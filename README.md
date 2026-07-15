@@ -31,13 +31,13 @@ binary `XCFramework` through Swift Package Manager.
    ```
    https://github.com/developersancho/pantrix-sdk-ios-spm
    ```
-3. Pick the version — currently **`1.0.0-alpha.3`** — and add the **`Pantrix`** library to your app target.
+3. Pick the version — currently **`1.0.0-alpha.4`** — and add the **`Pantrix`** library to your app target.
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-alpha.3"),
+    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-alpha.4"),
 ],
 ```
 
@@ -51,12 +51,14 @@ dependencies: [
         // Optional — only if you use the SwiftUI helpers (see "SwiftUI" below).
         // UIKit-only apps should NOT add this; it links SwiftUI.framework.
         .product(name: "PantrixSwiftUI", package: "pantrix-sdk-ios-spm"),
+        // Optional — only if you use Alamofire (see "Alamofire" below). Pulls Alamofire in.
+        .product(name: "PantrixAlamofire", package: "pantrix-sdk-ios-spm"),
     ]
 ),
 ```
 
 > `exact:` pins this release and also works for pre-releases. For a stable
-> release you may prefer `from: "1.0.0-alpha.3"` to automatically receive future
+> release you may prefer `from: "1.0.0-alpha.4"` to automatically receive future
 > minor and patch updates.
 
 ## Usage
@@ -102,6 +104,19 @@ headers stripped, secret keys masked, bodies capped at 256 KB).
   requests, report the body you already hold: `Pantrix.trackHttp(…, responseBody:, responseContentType:)`.
 - For non-`URLSession` stacks, the same manual `Pantrix.trackHttp(...)` reports the whole exchange.
 - Turn it all off with `eventTypeBlocklist = ["network"]`.
+
+### Alamofire
+
+If your app uses [Alamofire](https://github.com/Alamofire/Alamofire), add the **`PantrixAlamofire`**
+product and attach the Pantrix `EventMonitor` when building your `Session` — every request is then
+tracked (response body included), tagged `client: "alamofire"`, without changing the request:
+
+```swift
+import PantrixAlamofire
+
+let session = Session(eventMonitors: [PantrixEventMonitor()])
+session.request("https://api.example.com/users").responseDecodable(of: [User].self) { … }
+```
 
 ## SwiftUI
 
@@ -204,7 +219,7 @@ This package follows [Semantic Versioning](https://semver.org). Pre-release
 builds are tagged like `1.0.0-alpha.1` and must be referenced explicitly with
 `exact:`, since SwiftPM excludes pre-releases from `from:` / range requirements.
 
-**Latest release:** `1.0.0-alpha.3`
+**Latest release:** `1.0.0-alpha.4`
 
 ## License
 
