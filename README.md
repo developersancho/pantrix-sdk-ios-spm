@@ -31,13 +31,13 @@ binary `XCFramework` through Swift Package Manager.
    ```
    https://github.com/developersancho/pantrix-sdk-ios-spm
    ```
-3. Pick the version — currently **`1.0.0-alpha.4`** — and add the **`Pantrix`** library to your app target.
+3. Pick the version — currently **`1.0.0-alpha.5`** — and add the **`Pantrix`** library to your app target.
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-alpha.4"),
+    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-alpha.5"),
 ],
 ```
 
@@ -58,7 +58,7 @@ dependencies: [
 ```
 
 > `exact:` pins this release and also works for pre-releases. For a stable
-> release you may prefer `from: "1.0.0-alpha.4"` to automatically receive future
+> release you may prefer `from: "1.0.0-alpha.5"` to automatically receive future
 > minor and patch updates.
 
 ## Usage
@@ -219,7 +219,7 @@ This package follows [Semantic Versioning](https://semver.org). Pre-release
 builds are tagged like `1.0.0-alpha.1` and must be referenced explicitly with
 `exact:`, since SwiftPM excludes pre-releases from `from:` / range requirements.
 
-**Latest release:** `1.0.0-alpha.4`
+**Latest release:** `1.0.0-alpha.5`
 
 ## License
 
