@@ -17,7 +17,7 @@ binary `XCFramework` through Swift Package Manager.
 
 | Tool / OS | Minimum |
 |-----------|---------|
-| iOS       | 15.0    |
+| iOS       | 13.0    |
 | macOS     | 12.0    |
 | Xcode     | 16.0    |
 | Swift     | 6.0     |
@@ -31,13 +31,13 @@ binary `XCFramework` through Swift Package Manager.
    ```
    https://github.com/developersancho/pantrix-sdk-ios-spm
    ```
-3. Pick the version — currently **`1.0.0-alpha.5`** — and add the **`Pantrix`** library to your app target.
+3. Pick the version — currently **`1.0.0-beta.1`** — and add the **`Pantrix`** library to your app target.
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-alpha.5"),
+    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-beta.1"),
 ],
 ```
 
@@ -53,12 +53,20 @@ dependencies: [
         .product(name: "PantrixSwiftUI", package: "pantrix-sdk-ios-spm"),
         // Optional — only if you use Alamofire (see "Alamofire" below). Pulls Alamofire in.
         .product(name: "PantrixAlamofire", package: "pantrix-sdk-ios-spm"),
+        // Optional — only if you want automatic fatal-crash reporting (see "Crash reporting" below).
+        .product(name: "PantrixCrash", package: "pantrix-sdk-ios-spm"),
+        // Optional — only for the on-device debug inspector (see "On-device inspector" below).
+        // Debug-only: it refuses to activate in a non-debuggable build.
+        .product(name: "PantrixInspector", package: "pantrix-sdk-ios-spm"),
+        // Optional — only for the in-app user-feedback tool (see "In-app feedback" below).
+        // Debug-only, like the inspector.
+        .product(name: "PantrixFeedback", package: "pantrix-sdk-ios-spm"),
     ]
 ),
 ```
 
 > `exact:` pins this release and also works for pre-releases. For a stable
-> release you may prefer `from: "1.0.0-alpha.5"` to automatically receive future
+> release you may prefer `from: "1.0.0-beta.1"` to automatically receive future
 > minor and patch updates.
 
 ## Usage
@@ -118,6 +126,69 @@ let session = Session(eventMonitors: [PantrixEventMonitor()])
 session.request("https://api.example.com/users").responseDecodable(of: [User].self) { … }
 ```
 
+### Crash reporting
+
+The optional **`PantrixCrash`** product captures fatal crashes and reports them on the next launch.
+It installs process-global signal / exception handlers, so it is opt-in and **not** part of the
+umbrella — add the product deliberately and call `enable()` once, right after `initialize`:
+
+```swift
+import PantrixCrash
+
+Pantrix.initialize(with: config)
+PantrixCrash.enable()
+```
+
+Handled (non-fatal) exceptions don't need this add-on — report them anytime with
+`Pantrix.trackException(error)`. Crash stack frames are symbolicated server-side from your dSYMs;
+the device only sends addresses. Coexists with other crash reporters (Crashlytics/Sentry) by chaining
+their handlers, but running a single primary reporter is recommended.
+
+### Symbolication — upload your dSYMs
+
+A crash frame is a slid hex address with no symbols. The **only** thing that turns it back into a
+function name is that build's **dSYM**, matched by its image UUID — so every released build's dSYMs
+must be uploaded once. Xcode deletes dSYMs when a build machine is recycled, so do it at archive time.
+This package ships a helper, `Scripts/pantrix-upload-dsym.sh`, inside its SwiftPM checkout.
+
+**Recommended — an Xcode Archive post-action** (fires on ⌘⇧A → TestFlight/App Store, and sees the
+complete `dSYMs/` incl. the prebuilt `PantrixCore.framework.dSYM`):
+
+1. **Product → Scheme → Edit Scheme… → Archive → Post-actions → `+` → New Run Script Action.**
+2. Set **Provide build settings from** to your app target (so `$ARCHIVE_PATH` is defined).
+3. Paste:
+
+   ```sh
+   "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/pantrix-sdk-ios-spm/Scripts/pantrix-upload-dsym.sh" \
+     --archive "$ARCHIVE_PATH"
+   ```
+
+**Credentials** — put a **gitignored** `.pantrixrc` at your repo root (the script walks up from
+`$SRCROOT` to find it), or set the same names as CI secrets:
+
+```sh
+PANTRIX_API_URL="https://<your-pantrix-host>/api"
+PANTRIX_CI_KEY="pxu_…"   # a CI key (key_type=CI) — NOT your SDK ingest key
+```
+
+> The CI key is **not** the SDK key you pass to `initialize`. The SDK key ships inside the app and the
+> backend **rejects it here (401)** so nobody can poison your symbols. Never commit either key, and
+> never let the CI key ship in the app.
+
+**CI / release pipeline** — after `xcodebuild archive`, point the same script at the `.xcarchive`
+(credentials from the environment):
+
+```sh
+SPM_CHECKOUT="$(find ~/Library/Developer/Xcode/DerivedData -type d \
+  -path '*/SourcePackages/checkouts/pantrix-sdk-ios-spm' | head -1)"
+
+PANTRIX_API_URL="…" PANTRIX_CI_KEY="pxu_…" \
+  "$SPM_CHECKOUT/Scripts/pantrix-upload-dsym.sh" --archive build/MyApp.xcarchive
+```
+
+Bitcode is gone (Xcode 14+), so your archive's dSYMs already match the App Store binary — there is
+**no** manual "download dSYMs from App Store Connect" step.
+
 ## SwiftUI
 
 The optional **`PantrixSwiftUI`** product adds opt-in, developer-named helpers for SwiftUI — the
@@ -169,6 +240,71 @@ they just don't report until the OS supports them:
 | `trackFocus(isFocused:)` | iOS 14 | no-op (use `trackedEditingChanged` for a `TextField`) |
 | `trackNavigation(path:)` | iOS 16 | not available (`NavigationStack` is iOS 16) |
 
+## On-device inspector
+
+The optional **`PantrixInspector`** product is a **debug-only**, read-only UI that shows the telemetry
+Pantrix has already stored — the queued events, captured HTTP exchanges, pending crashes, and live
+device/performance signals. It ships as source and refuses to activate in a non-debuggable build, so it is
+safe to leave wired in. Add the `PantrixInspector` product and call `enable()` once, ideally behind your
+own `#if DEBUG`:
+
+```swift
+import PantrixInspector
+
+Pantrix.initialize(with: config)
+#if DEBUG
+PantrixInspector.enable()
+#endif
+
+// Then open it from a debug affordance:
+PantrixInspector.present(from: self)            // UIKit
+let vc = PantrixInspector.makeViewController()  // SwiftUI — host it yourself
+```
+
+Gate your own "Open Inspector" button on `PantrixInspector.isAvailable` so a release build (which won't
+open it) doesn't show a dead menu item. Optional zero-code launchers — a device **shake** or a floating
+**bubble** — are off by default:
+
+```swift
+var config = InspectorConfiguration()
+config.enablesShakeToOpen = true
+config.showsFloatingBubble = true
+PantrixInspector.enable(config)
+```
+
+The inspector activates only on **iOS 15+** in a **debuggable** build (App Store builds show nothing). To
+reach it in **TestFlight** QA, set `config.allowsInReleaseBuilds = true` — a deliberate opt-in. Network
+request/response bodies appear only if you enabled HTTP body capture; the same redaction is applied. Full
+guide: [`Docs/PANTRIX_INSPECTOR.md`](Docs/PANTRIX_INSPECTOR.md).
+
+## In-app feedback
+
+The optional **`PantrixFeedback`** product is a **debug-only** in-app user-feedback tool: it captures a
+screenshot of the current screen, lets the user annotate it (PencilKit) and type a message, then opens the
+system **mail composer or share sheet** addressed to an e-mail **you** configure. It depends on nothing else
+(no backend, no analytics event) and, like the inspector, refuses to activate in a non-debuggable build —
+**feedback never reaches Pantrix**, only the destination the user picks.
+
+```swift
+import PantrixFeedback
+
+#if DEBUG
+var config = FeedbackConfiguration()
+config.recipientEmail = "feedback@yourteam.com"
+config.enablesShakeGesture = true   // optional: open on a device shake (CoreMotion)
+PantrixFeedback.enable(config)
+#endif
+
+// Open it from your own "Send Feedback" button:
+PantrixFeedback.show(from: self)               // UIKit
+// let vc = topViewController; PantrixFeedback.show(from: vc)  // SwiftUI
+```
+
+Gate your affordance on `PantrixFeedback.isAvailable`. Reach it in **TestFlight** QA with
+`config.debugOnly = false`. If you also use `PantrixInspector`'s shake, enable shake on **only one** of them
+(the other gets a button) — a single shake would otherwise open both. Full guide:
+[`Docs/PANTRIX_FEEDBACK.md`](Docs/PANTRIX_FEEDBACK.md).
+
 ## App Store submission checklist
 
 Pantrix ships an Apple **privacy manifest** (`PrivacyInfo.xcprivacy`) inside the framework, so the
@@ -219,7 +355,7 @@ This package follows [Semantic Versioning](https://semver.org). Pre-release
 builds are tagged like `1.0.0-alpha.1` and must be referenced explicitly with
 `exact:`, since SwiftPM excludes pre-releases from `from:` / range requirements.
 
-**Latest release:** `1.0.0-alpha.5`
+**Latest release:** `1.0.0-beta.1`
 
 ## License
 
