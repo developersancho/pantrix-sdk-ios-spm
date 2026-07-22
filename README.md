@@ -1,24 +1,26 @@
 # Pantrix iOS SDK
 
-Closed-source Pantrix SDK for Apple platforms, distributed as a precompiled
-binary `XCFramework` through Swift Package Manager.
+Closed-source Pantrix SDK for iOS, distributed as precompiled
+binary `XCFramework`s through Swift Package Manager.
 
 [![Release](https://img.shields.io/github/v/release/developersancho/pantrix-sdk-ios-spm?include_prereleases&sort=semver&label=release)](https://github.com/developersancho/pantrix-sdk-ios-spm/releases)
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://www.swift.org/package-manager/)
-[![Platforms](https://img.shields.io/badge/platforms-iOS%2015%2B%20%7C%20macOS%2012%2B-lightgrey.svg)](#requirements)
+[![Platform](https://img.shields.io/badge/platform-iOS%2013%2B-lightgrey.svg)](#requirements)
 [![License](https://img.shields.io/github/license/developersancho/pantrix-sdk-ios-spm)](LICENSE)
 
-> **Distribution package.** This repository ships a precompiled
-> `PantrixCore.xcframework` plus a thin `Pantrix` umbrella module, so apps only
-> need `import Pantrix`. It is generated automatically from the private source
-> repository on every release — please don't edit files here by hand.
+> **Distribution package.** This repository ships every Pantrix module as a
+> precompiled, closed binary `XCFramework` — core + the `Pantrix` umbrella + the
+> opt-in SwiftUI / crash / inspector / feedback add-ons — plus the thin
+> `PantrixAlamofire` **source** adapter (it shares your app's own Alamofire). Apps
+> use `import Pantrix` and add any opt-in module they need. Generated automatically
+> from the private source repository on every release — please don't edit files
+> here by hand.
 
 ## Requirements
 
 | Tool / OS | Minimum |
 |-----------|---------|
 | iOS       | 13.0    |
-| macOS     | 12.0    |
 | Xcode     | 16.0    |
 | Swift     | 6.0     |
 
@@ -31,13 +33,13 @@ binary `XCFramework` through Swift Package Manager.
    ```
    https://github.com/developersancho/pantrix-sdk-ios-spm
    ```
-3. Pick the version — currently **`1.0.0-beta.1`** — and add the **`Pantrix`** library to your app target.
+3. Pick the version — currently **`1.0.0-beta.2`** — and add the **`Pantrix`** library to your app target.
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-beta.1"),
+    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-beta.2"),
 ],
 ```
 
@@ -51,7 +53,8 @@ dependencies: [
         // Optional — only if you use the SwiftUI helpers (see "SwiftUI" below).
         // UIKit-only apps should NOT add this; it links SwiftUI.framework.
         .product(name: "PantrixSwiftUI", package: "pantrix-sdk-ios-spm"),
-        // Optional — only if you use Alamofire (see "Alamofire" below). Pulls Alamofire in.
+        // Optional — the Alamofire add-on (see "Alamofire" below). You must ALSO add Alamofire to your
+        // own Package.swift + this target — it's a source adapter that shares your app's single Alamofire.
         .product(name: "PantrixAlamofire", package: "pantrix-sdk-ios-spm"),
         // Optional — only if you want automatic fatal-crash reporting (see "Crash reporting" below).
         .product(name: "PantrixCrash", package: "pantrix-sdk-ios-spm"),
@@ -66,7 +69,7 @@ dependencies: [
 ```
 
 > `exact:` pins this release and also works for pre-releases. For a stable
-> release you may prefer `from: "1.0.0-beta.1"` to automatically receive future
+> release you may prefer `from: "1.0.0-beta.2"` to automatically receive future
 > minor and patch updates.
 
 ## Usage
@@ -116,11 +119,17 @@ headers stripped, secret keys masked, bodies capped at 256 KB).
 ### Alamofire
 
 If your app uses [Alamofire](https://github.com/Alamofire/Alamofire), add the **`PantrixAlamofire`**
-product and attach the Pantrix `EventMonitor` when building your `Session` — every request is then
-tracked (response body included), tagged `client: "alamofire"`, without changing the request:
+product **and add Alamofire to your own package + target**. Unlike the other modules it ships as a thin
+**source** adapter, so it shares your app's single Alamofire copy — but SPM only lets your code
+`import Alamofire` (which you need to build a `Session`) if you declare it yourself: add
+`.package(url: "https://github.com/Alamofire/Alamofire", from: "5.12.0")` and, in your target,
+`.product(name: "Alamofire", package: "Alamofire")`. Then attach the Pantrix `EventMonitor` when building
+your `Session` — every request is tracked (response body included), tagged `client: "alamofire"`, without
+changing the request:
 
 ```swift
 import PantrixAlamofire
+import Alamofire
 
 let session = Session(eventMonitors: [PantrixEventMonitor()])
 session.request("https://api.example.com/users").responseDecodable(of: [User].self) { … }
@@ -355,7 +364,7 @@ This package follows [Semantic Versioning](https://semver.org). Pre-release
 builds are tagged like `1.0.0-alpha.1` and must be referenced explicitly with
 `exact:`, since SwiftPM excludes pre-releases from `from:` / range requirements.
 
-**Latest release:** `1.0.0-beta.1`
+**Latest release:** `1.0.0-beta.2`
 
 ## License
 
