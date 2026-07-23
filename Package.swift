@@ -30,6 +30,13 @@ let package = Package(
         .library(name: "PantrixInspector", targets: ["PantrixInspector", "PantrixInspectorKit"]),
         // Opt-in in-app user-feedback tool. The Kit reaches consumers via the view's `@_exported import`.
         .library(name: "PantrixFeedback", targets: ["PantrixFeedback", "PantrixFeedbackKit"]),
+        // No-op twins of the two debug tools (Android's `-noop` analogue). Same PUBLIC API as the real
+        // products but inert, and SOURCE with NO Kit dependency — a host links one of these in a Release
+        // build INSTEAD of the real product so none of the debug-tool code (or its Kit) ships in that binary.
+        // SPM has no per-configuration dependency (unlike Gradle's `releaseImplementation`); guard the import
+        // with your own flag and link the chosen product per Xcode configuration.
+        .library(name: "PantrixInspectorNoop", targets: ["PantrixInspectorNoop"]),
+        .library(name: "PantrixFeedbackNoop", targets: ["PantrixFeedbackNoop"]),
     ],
     dependencies: [
         // Pulled in ONLY by the source PantrixAlamofire adapter. SPM resolves ONE shared Alamofire across
@@ -37,14 +44,14 @@ let package = Package(
         .package(url: "https://github.com/Alamofire/Alamofire", from: "5.12.0"),
     ],
     targets: [
-        .binaryTarget(name: "PantrixCore", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixCore-1.0.0-beta.6.xcframework.zip", checksum: "76e778326d63b01106bb113820aa0e90c3ff73b71be1ce28513829082e7e23ce"),
-        .binaryTarget(name: "Pantrix", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/Pantrix-1.0.0-beta.6.xcframework.zip", checksum: "19e0213bc1c3bc36afa118f0c0de6a76a59d034d9bd86bd42792978f3b9f084c"),
-        .binaryTarget(name: "PantrixSwiftUI", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixSwiftUI-1.0.0-beta.6.xcframework.zip", checksum: "d969c039349f25c7479bfbbf02273b5497a38688f508232d42fc8412daeb4015"),
-        .binaryTarget(name: "PantrixCrash", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixCrash-1.0.0-beta.6.xcframework.zip", checksum: "a6aaa9bd952445df2f8eda143d3d7d39860db0cf1d9459ed564527f338ecb83c"),
-        .binaryTarget(name: "PantrixInspectorKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixInspectorKit-1.0.0-beta.6.xcframework.zip", checksum: "7d015d694bc1676f16de9d1f9290cfd0473b5734d078164f171c668f76915de4"),
-        .binaryTarget(name: "PantrixInspector", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixInspector-1.0.0-beta.6.xcframework.zip", checksum: "25c91c2432da36ee4a562253c6a22655c42d18a7fe547cd22904cb2dd288455d"),
-        .binaryTarget(name: "PantrixFeedbackKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixFeedbackKit-1.0.0-beta.6.xcframework.zip", checksum: "d90218f28d26a458ac1a4c0f7cc6e3f180142c2d83ec39b1f2cdb90ef176b7db"),
-        .binaryTarget(name: "PantrixFeedback", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.6/PantrixFeedback-1.0.0-beta.6.xcframework.zip", checksum: "b5018f79cfb7941a5394624686fe6f10e4fcd240a36ab8ded8788ae17d64bb49"),
+        .binaryTarget(name: "PantrixCore", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixCore-1.0.0-beta.7.xcframework.zip", checksum: "ddfc254c871e95d528c7a4195b4dee2860ba5327445a891bd7836e1b4c6eaff4"),
+        .binaryTarget(name: "Pantrix", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/Pantrix-1.0.0-beta.7.xcframework.zip", checksum: "4858a0def1d7cb612a319c4f6b669c05e0a19fe4645f57939610fb31faa71850"),
+        .binaryTarget(name: "PantrixSwiftUI", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixSwiftUI-1.0.0-beta.7.xcframework.zip", checksum: "6aa621e5984e81eacc6c1a1477a60d0ebde933a42d3ac409f23e34163fffb89c"),
+        .binaryTarget(name: "PantrixCrash", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixCrash-1.0.0-beta.7.xcframework.zip", checksum: "9d401c99e4d90a78faa918bc8144508d88ea6ed60e3bb7bcfa37fa4614e0ebb2"),
+        .binaryTarget(name: "PantrixInspectorKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixInspectorKit-1.0.0-beta.7.xcframework.zip", checksum: "17a1382b63e1521f2cbc8b473582e6832d8fc95bc1c3d204b6a3e00c3a2377a4"),
+        .binaryTarget(name: "PantrixInspector", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixInspector-1.0.0-beta.7.xcframework.zip", checksum: "0655b8139e8be1f68a630ec4940cce86a1fcbf6b6c70a531c8c95e49d2a1403b"),
+        .binaryTarget(name: "PantrixFeedbackKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixFeedbackKit-1.0.0-beta.7.xcframework.zip", checksum: "dc83f199551a890245f2cafef031554005d2a4806f1d88400ef91fa56cd4af68"),
+        .binaryTarget(name: "PantrixFeedback", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixFeedback-1.0.0-beta.7.xcframework.zip", checksum: "8ccd2168bf29d9b7d37a2fcd03b13c79bff67a12aaa7199a3d241d61af419d29"),
         // SOURCE adapter (not a binary) — see the header note. Compiles in the consumer's build against the
         // binary PantrixCore and the shared Alamofire.
         .target(
@@ -55,5 +62,9 @@ let package = Package(
             ],
             path: "Sources/PantrixAlamofire"
         ),
+        // No-op twins — inert SOURCE stubs of the two debug tools' public API (see the products above). No
+        // Kit dependency, so linking a noop ships none of the real inspector/feedback code.
+        .target(name: "PantrixInspectorNoop", path: "Sources/PantrixInspectorNoop"),
+        .target(name: "PantrixFeedbackNoop", path: "Sources/PantrixFeedbackNoop"),
     ]
 )
