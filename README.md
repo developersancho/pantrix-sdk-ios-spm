@@ -33,13 +33,13 @@ binary `XCFramework`s through Swift Package Manager.
    ```
    https://github.com/developersancho/pantrix-sdk-ios-spm
    ```
-3. Pick the version — currently **`1.0.0-beta.7`** — and add the **`Pantrix`** library to your app target.
+3. Pick the version — currently **`1.0.0-beta.8`** — and add the **`Pantrix`** library to your app target.
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-beta.7"),
+    .package(url: "https://github.com/developersancho/pantrix-sdk-ios-spm.git", exact: "1.0.0-beta.8"),
 ],
 ```
 
@@ -69,7 +69,7 @@ dependencies: [
 ```
 
 > `exact:` pins this release and also works for pre-releases. For a stable
-> release you may prefer `from: "1.0.0-beta.7"` to automatically receive future
+> release you may prefer `from: "1.0.0-beta.8"` to automatically receive future
 > minor and patch updates.
 
 ## Usage
@@ -353,9 +353,10 @@ will ask you to justify.
 
 ### 3. Export compliance
 
-Pantrix uses only Apple's standard cryptography — HTTPS, plus CryptoKit AES-GCM when you opt into
-`storageEncryption` (**off by default**). This normally falls under the standard exemption, so most
-apps declare `ITSAppUsesNonExemptEncryption = false` in `Info.plist`. Confirm with whoever owns
+Pantrix uses only Apple's standard cryptography — HTTPS, the OS Data Protection applied to the local
+store (on by default), plus CryptoKit AES-GCM on sensitive values only when you opt into
+`storageEncryption = .full` (**off by default**). This normally falls under the standard exemption, so
+most apps declare `ITSAppUsesNonExemptEncryption = false` in `Info.plist`. Confirm with whoever owns
 compliance at your company.
 
 ## Versioning
@@ -364,7 +365,7 @@ This package follows [Semantic Versioning](https://semver.org). Pre-release
 builds are tagged like `1.0.0-alpha.1` and must be referenced explicitly with
 `exact:`, since SwiftPM excludes pre-releases from `from:` / range requirements.
 
-**Latest release:** `1.0.0-beta.7`
+**Latest release:** `1.0.0-beta.8`
 
 ## License
 

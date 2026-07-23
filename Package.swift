@@ -44,14 +44,14 @@ let package = Package(
         .package(url: "https://github.com/Alamofire/Alamofire", from: "5.12.0"),
     ],
     targets: [
-        .binaryTarget(name: "PantrixCore", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixCore-1.0.0-beta.7.xcframework.zip", checksum: "ddfc254c871e95d528c7a4195b4dee2860ba5327445a891bd7836e1b4c6eaff4"),
-        .binaryTarget(name: "Pantrix", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/Pantrix-1.0.0-beta.7.xcframework.zip", checksum: "4858a0def1d7cb612a319c4f6b669c05e0a19fe4645f57939610fb31faa71850"),
-        .binaryTarget(name: "PantrixSwiftUI", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixSwiftUI-1.0.0-beta.7.xcframework.zip", checksum: "6aa621e5984e81eacc6c1a1477a60d0ebde933a42d3ac409f23e34163fffb89c"),
-        .binaryTarget(name: "PantrixCrash", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixCrash-1.0.0-beta.7.xcframework.zip", checksum: "9d401c99e4d90a78faa918bc8144508d88ea6ed60e3bb7bcfa37fa4614e0ebb2"),
-        .binaryTarget(name: "PantrixInspectorKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixInspectorKit-1.0.0-beta.7.xcframework.zip", checksum: "17a1382b63e1521f2cbc8b473582e6832d8fc95bc1c3d204b6a3e00c3a2377a4"),
-        .binaryTarget(name: "PantrixInspector", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixInspector-1.0.0-beta.7.xcframework.zip", checksum: "0655b8139e8be1f68a630ec4940cce86a1fcbf6b6c70a531c8c95e49d2a1403b"),
-        .binaryTarget(name: "PantrixFeedbackKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixFeedbackKit-1.0.0-beta.7.xcframework.zip", checksum: "dc83f199551a890245f2cafef031554005d2a4806f1d88400ef91fa56cd4af68"),
-        .binaryTarget(name: "PantrixFeedback", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.7/PantrixFeedback-1.0.0-beta.7.xcframework.zip", checksum: "8ccd2168bf29d9b7d37a2fcd03b13c79bff67a12aaa7199a3d241d61af419d29"),
+        .binaryTarget(name: "PantrixCore", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixCore-1.0.0-beta.8.xcframework.zip", checksum: "c56d91b6d3c5637cd4766308626192e34647bf340f4f0581c6720b0d337f2533"),
+        .binaryTarget(name: "Pantrix", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/Pantrix-1.0.0-beta.8.xcframework.zip", checksum: "d79a2288e2b043b00dcf8c3743dc8615ca6c504f47083e071af64a5da0e5d4c5"),
+        .binaryTarget(name: "PantrixSwiftUI", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixSwiftUI-1.0.0-beta.8.xcframework.zip", checksum: "39b62425fa9fa556dd24c28fc8f2a13784aaba93101945a4bee03618a8c372ba"),
+        .binaryTarget(name: "PantrixCrash", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixCrash-1.0.0-beta.8.xcframework.zip", checksum: "1183038bb17465acd0a70919695b4db3ec9ac5c4ab1be8df382caed413a8ae17"),
+        .binaryTarget(name: "PantrixInspectorKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixInspectorKit-1.0.0-beta.8.xcframework.zip", checksum: "f68f691df32e0f444ae55a9fa8a07fc158ec5c543fc3c01a8e762eda40ceae31"),
+        .binaryTarget(name: "PantrixInspector", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixInspector-1.0.0-beta.8.xcframework.zip", checksum: "4bb9a60fdd9f41f5833a9c8df8a12b819e93b9e93f0453dc3a3e28359a740e3d"),
+        .binaryTarget(name: "PantrixFeedbackKit", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixFeedbackKit-1.0.0-beta.8.xcframework.zip", checksum: "d1878d583354a13fb73a9d4f1fd180f48238dd67b272b0181e68815fe1aa38df"),
+        .binaryTarget(name: "PantrixFeedback", url: "https://github.com/developersancho/pantrix-sdk-ios-spm/releases/download/1.0.0-beta.8/PantrixFeedback-1.0.0-beta.8.xcframework.zip", checksum: "0d825e94a67f5f8ff725eabbd5dd3aae5a6d1fc9d7dfeb564a55510abd81fbcf"),
         // SOURCE adapter (not a binary) — see the header note. Compiles in the consumer's build against the
         // binary PantrixCore and the shared Alamofire.
         .target(
