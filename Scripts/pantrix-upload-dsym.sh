@@ -71,8 +71,9 @@ CI_KEY="${PANTRIX_CI_KEY:-}"
 # every build. CI mode does not need it: running this script by hand IS the intent.
 OPT_IN="${PANTRIX_UPLOAD_DSYM:-0}"
 
-MODE=""            # "ci" | "buildphase"
+MODE=""            # "ci" | "buildphase" | "dsyms"
 ARCHIVE=""
+DSYM_DIR=""        # --dsyms: a plain directory of *.dSYM bundles (SDK vendor release-side upload)
 BUILD_PHASE=0      # 1 → never exit non-zero
 INIT=0             # 1 → run the --init wizard and exit
 FORCE=0            # 1 → --init may overwrite an existing .pantrixrc
@@ -185,6 +186,7 @@ while [ $# -gt 0 ]; do
         --init)    INIT=1; shift ;;
         --force)   FORCE=1; shift ;;
         --archive) ARCHIVE="${2:-}"; MODE="ci"; shift 2 ;;
+        --dsyms)   DSYM_DIR="${2:-}"; MODE="dsyms"; shift 2 ;;
         -h|--help) usage 0 ;;
         *) printf 'Unknown argument: %s\n\n' "$1" >&2; usage 2 ;;
     esac
@@ -298,6 +300,20 @@ ci)
         VERSION_NAME="$(plutil -extract ApplicationProperties.CFBundleShortVersionString raw -o - -- "$ARCHIVE/Info.plist" 2>/dev/null || true)"
         VERSION_CODE="$(plutil -extract ApplicationProperties.CFBundleVersion raw -o - -- "$ARCHIVE/Info.plist" 2>/dev/null || true)"
     fi
+    ;;
+dsyms)
+    # Upload a plain directory of *.dSYM bundles — e.g. an SDK vendor uploading its framework dSYMs at
+    # release time, so a consumer's crash in SDK code still symbolicates WITHOUT the dSYMs being shipped
+    # inside the distributed xcframework. Fails loudly like CI mode (a silent skip = unreadable crashes).
+    [ -n "$DSYM_DIR" ] || die "--dsyms needs a directory"
+    [ -d "$DSYM_DIR" ] || die "no such dSYM directory: $DSYM_DIR"
+    shopt -s nullglob
+    bundles=("$DSYM_DIR"/*.dSYM)
+    shopt -u nullglob
+    [ "${#bundles[@]}" -gt 0 ] || die "no .dSYM bundles in $DSYM_DIR"
+    for bundle in "${bundles[@]}"; do collect_from_dsym_bundle "$bundle"; done
+    VERSION_NAME="${PANTRIX_VERSION_NAME:-}"
+    VERSION_CODE="${PANTRIX_VERSION_CODE:-}"
     ;;
 buildphase)
     if [ "$OPT_IN" != "1" ]; then
