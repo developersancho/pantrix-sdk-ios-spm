@@ -358,6 +358,16 @@ SLICES="$TMPDIR_ROOT/slices.tsv"
 : > "$SLICES"
 slice_n=0
 
+# Declare each uuid ONCE. Two collected dSYMs can legitimately cover the SAME slice: guard_stale_app_dsym
+# regenerates the app's dSYM and ADDS it to the list, while the stale bundle stays in the list and still
+# covers whatever was NOT relinked (a fat simulator build where only one arch changed). Both then declare
+# that shared uuid, and the backend rejects the WHOLE manifest with "Duplicate debugId" — so a build that
+# detected and corrected the stale-dSYM race still uploaded nothing, which is the exact failure the guard
+# exists to prevent. Same uuid means the same binary image, so the two copies are interchangeable and
+# first-wins is safe. Skipping here (before lipo + shasum) also avoids the work.
+SEEN_UUIDS="$TMPDIR_ROOT/seen-uuids"
+: > "$SEEN_UUIDS"
+
 # Read line-by-line (NOT `for … in $(cat)`): dSYM paths contain SPACES — an Xcode archive lives at
 # ".../MyApp DD.MM.YYYY, HH.MM.xcarchive", so word-splitting shattered the path and dwarfdump found
 # nothing. Real archives always have spaces; a /tmp test path doesn't — which is exactly how this hid.
@@ -378,6 +388,14 @@ while IFS= read -r binary; do
         uuid="$(printf '%s' "$line" | awk '{print $2}')"
         arch="$(printf '%s' "$line" | awk '{print $3}' | tr -d '()')"
         [ -n "$uuid" ] && [ -n "$arch" ] || { warn "unparsable dwarfdump line: $line"; continue; }
+
+        # -x so a uuid can never match as a substring of another; -i because dwarfdump's case is not
+        # something to depend on.
+        if grep -qiFx "$uuid" "$SEEN_UUIDS"; then
+            log "slice $uuid ($arch) already declared by an earlier dSYM — skipping the duplicate"
+            continue
+        fi
+        printf '%s\n' "$uuid" >> "$SEEN_UUIDS"
 
         slice_n=$((slice_n + 1))
         upload_file="$TMPDIR_ROOT/slice-$slice_n"
